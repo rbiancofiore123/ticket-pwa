@@ -146,8 +146,8 @@
     <!-- Left column -->
     <div class="card">
       <div>
-        <div class="title">Add Item</div>
-        <div class="subtitle">Enter item price and press "Add"</div>
+        <div class="title">Ticket Calculator</div>
+        <!--<div class="subtitle">Enter item price and press "Add"</div>-->
         <div class="input">
           <input id="amount" placeholder="0,00" inputmode="decimal" />
           <div class="suffix">EUR</div>
@@ -320,11 +320,6 @@
 
     renderItems();
     calculate();
-
-    // ✅ Extra: block double-tap zoom (but keep pinch-to-zoom)
-    document.addEventListener('dblclick', function (e) {
-      e.preventDefault();
-    }, { passive: false });
   </script>
 </body>
 </html>
