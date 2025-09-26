@@ -1,0 +1,251 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Ticket Restaurant Calculator</title>
+  <style>
+    html, body {
+      margin: 0; padding: 0;
+      height: 100%; width: 100%;
+      font-family: Arial, sans-serif;
+      background: #0f172a; color: #e5e7eb;
+      overflow: hidden;
+    }
+    .app {
+      display: grid;
+      grid-template-columns: 1fr;
+      height: 100vh;
+    }
+    @media (min-width: 800px) {
+      .app { grid-template-columns: 1fr 1fr; }
+    }
+    .card {
+      background: #111827;
+      padding: 2vh;
+      display: flex;
+      flex-direction: column;
+      border-radius: 16px;
+      margin: 1vh;
+      font-size: clamp(14px, 2.2vw, 20px);
+    }
+    .title { font-size: clamp(18px, 3vw, 28px); font-weight: bold; margin-bottom: 1vh; }
+    .subtitle { font-size: clamp(14px, 2vw, 18px); color: #94a3b8; margin-bottom: 1vh; }
+    .input {
+      display: flex; border: 2px solid #374151;
+      border-radius: 10px; background: #0b1226;
+      margin-bottom: 1vh;
+    }
+    .input input {
+      flex: 1; border: none; background: transparent;
+      color: white; padding: 1.5vh; font-size: clamp(20px, 3vw, 28px);
+      text-align: right;
+    }
+    .suffix { padding: 1.5vh; color: #94a3b8; font-weight: bold; font-size: clamp(16px, 2.5vw, 22px); }
+    .btn {
+      background: #1f2937; border: none;
+      padding: 1.5vh; margin: 0.5vh;
+      border-radius: 10px; color: white; font-size: clamp(18px, 3vw, 26px); cursor: pointer;
+    }
+    .btn.add { background: #0891a6; }
+    .btn.warn { background: #374151; color: #fca5a5; }
+    .btn.remove { background: #ef4444; font-size: clamp(14px, 2vw, 18px); padding: 0.5vh 1vh; margin-left: 8px; }
+    .keypad {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 1vh;
+      margin-top: 1vh;
+      flex: 1;
+    }
+    .keypad .btn {
+      font-size: clamp(22px, 4vw, 30px);
+      padding: 3vh 0;
+    }
+    .results { display: flex; flex-direction: column; justify-content: space-between; flex: 1; }
+    .stat { display: flex; justify-content: space-between; margin: 1vh 0; }
+    .value { font-size: clamp(22px, 3.5vw, 32px); font-weight: bold; }
+    .danger { color: #ef4444; }
+    .ok { color: #10b981; }
+    .info { color: #38bdf8; font-size: clamp(16px, 2.2vw, 20px); margin-top: 1vh; }
+    .caps {
+      display: grid; grid-template-columns: repeat(3,1fr);
+      gap: 1vh; margin-top: 1vh;
+    }
+    .cap {
+      background: #0b1226; border: 2px dashed #223047;
+      border-radius: 10px; padding: 1vh; text-align: center;
+      color: #94a3b8; font-size: clamp(14px, 2vw, 18px);
+    }
+    .cap strong { color: #e5e7eb; font-size: clamp(16px, 2.5vw, 22px); }
+    .items { flex: 1; overflow-y: auto; margin-top: 1vh; font-size: clamp(16px, 2.5vw, 20px); }
+    .item { display: flex; justify-content: space-between; align-items: center; padding: 1vh 0; border-bottom: 1px solid #374151; }
+  </style>
+</head>
+<body>
+  <div class="app">
+    <!-- Left column -->
+    <div class="card">
+      <div>
+        <div class="title">Add Item</div>
+        <div class="subtitle">Enter item price and press "Add"</div>
+        <div class="input">
+          <input id="amount" placeholder="0,00" inputmode="decimal" />
+          <div class="suffix">EUR</div>
+        </div>
+        <div>
+          <button class="btn add" id="addItem">Add</button>
+          <button class="btn warn" id="clearAll">Clear All</button>
+        </div>
+      </div>
+
+      <div class="keypad">
+        <button class="btn" data-key="7">7</button>
+        <button class="btn" data-key="8">8</button>
+        <button class="btn" data-key="9">9</button>
+        <button class="btn" data-key="4">4</button>
+        <button class="btn" data-key="5">5</button>
+        <button class="btn" data-key="6">6</button>
+        <button class="btn" data-key="1">1</button>
+        <button class="btn" data-key="2">2</button>
+        <button class="btn" data-key="3">3</button>
+        <button class="btn" data-key="0">0</button>
+        <button class="btn" data-key=",">,</button>
+        <button class="btn" id="bksp">⌫</button>
+      </div>
+
+      <div class="title" style="margin-top:1vh;">Items</div>
+      <div class="items" id="itemsList"><em>No items yet.</em></div>
+    </div>
+
+    <!-- Right column -->
+    <div class="card results">
+      <div>
+        <div class="title">Result</div>
+        <div class="stat">
+          <span>Total Purchase</span>
+          <span class="value" id="total">€0.00</span>
+        </div>
+        <div class="stat">
+          <span>Voucher coverage</span>
+          <span class="value" id="coverage">€0.00</span>
+        </div>
+        <div class="stat">
+          <span>To Pay</span>
+          <span class="value" id="difference">€0.00</span>
+        </div>
+        <div class="info" id="nextVoucher">Next voucher: €0.00 needed</div>
+      </div>
+      <div class="caps">
+        <div class="cap">Voucher value<br><strong>€8.50</strong></div>
+        <div class="cap">Max vouchers<br><strong>8</strong></div>
+        <div class="cap">Max coverage<br><strong>€68.00</strong></div>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    const VOUCHER_VALUE = 8.50, MAX_VOUCHERS = 8, MAX_COVERAGE = VOUCHER_VALUE * MAX_VOUCHERS;
+    const fmt = new Intl.NumberFormat('it-IT', { style: 'currency', currency: 'EUR' });
+
+    const amountEl = document.getElementById('amount');
+    const totalEl = document.getElementById('total');
+    const coverageEl = document.getElementById('coverage');
+    const diffEl = document.getElementById('difference');
+    const nextVoucherEl = document.getElementById('nextVoucher');
+    const itemsList = document.getElementById('itemsList');
+
+    let items = [];
+
+    function parseAmount(val) {
+      if (!val) return 0;
+      return parseFloat(val.replace(',', '.')) || 0;
+    }
+
+    function renderItems() {
+      itemsList.innerHTML = "";
+      if (items.length === 0) {
+        itemsList.innerHTML = "<em>No items yet.</em>";
+        return;
+      }
+      items.forEach((val, idx) => {
+        const div = document.createElement("div");
+        div.className = "item";
+        div.innerHTML = `<span>Item ${idx+1}: ${fmt.format(val)}</span>
+                         <button class="btn remove" data-idx="${idx}">x</button>`;
+        itemsList.appendChild(div);
+      });
+      document.querySelectorAll(".btn.remove").forEach(btn => {
+        btn.onclick = () => {
+          items.splice(btn.dataset.idx, 1);
+          renderItems();
+          calculate();
+        };
+      });
+    }
+
+    function calculate() {
+      const amount = items.reduce((a, b) => a + b, 0);
+
+      // Voucher logic
+      let vouchers = Math.round(amount / VOUCHER_VALUE);
+      vouchers = Math.min(MAX_VOUCHERS, Math.max(0, vouchers));
+      let coverage = Math.min(MAX_COVERAGE, vouchers * VOUCHER_VALUE);
+      let diff = Math.max(0, amount - coverage);
+
+      // Next voucher info
+      let nextNeeded = 0;
+      if (vouchers < MAX_VOUCHERS) {
+        const nextStep = (vouchers + 1) * VOUCHER_VALUE;
+        nextNeeded = Math.max(0, nextStep - amount);
+      }
+
+      // Update UI
+      totalEl.textContent = fmt.format(amount);
+      coverageEl.textContent = fmt.format(coverage);
+      diffEl.textContent = fmt.format(diff);
+      diffEl.className = diff > 0 ? "value danger" : "value ok";
+
+      if (amount === 0) {
+        nextVoucherEl.textContent = "Next voucher: €0.00 needed";
+      } else if (vouchers >= MAX_VOUCHERS) {
+        nextVoucherEl.textContent = "Max vouchers already applied";
+      } else if (nextNeeded > 0) {
+        nextVoucherEl.textContent = `Add ${fmt.format(nextNeeded)} to reach next voucher`;
+      } else {
+        nextVoucherEl.textContent = "Fully covered by vouchers";
+      }
+    }
+
+    document.getElementById('addItem').onclick = () => {
+      const val = parseAmount(amountEl.value);
+      if (val > 0) {
+        items.push(val);
+        amountEl.value = "";
+        renderItems();
+        calculate();
+      }
+    };
+
+    document.getElementById('clearAll').onclick = () => {
+      items = [];
+      renderItems();
+      calculate();
+    };
+
+    document.getElementById('bksp').onclick = () => {
+      amountEl.value = amountEl.value.slice(0, -1);
+    };
+
+    document.querySelectorAll('.keypad .btn[data-key]').forEach(btn => {
+      btn.onclick = () => {
+        let k = btn.dataset.key;
+        if (k === "," && (amountEl.value.includes(",") || amountEl.value.includes("."))) return;
+        amountEl.value += k;
+      };
+    });
+
+    renderItems();
+    calculate();
+  </script>
+</body>
+</html>
