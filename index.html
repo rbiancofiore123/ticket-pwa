@@ -19,14 +19,20 @@
       height: 100%; width: 100%;
       font-family: Arial, sans-serif;
       background: #0f172a; color: #e5e7eb;
-      overflow-y: auto; /* allow scrolling */
+      overflow-y: auto;
       -webkit-overflow-scrolling: touch;
+    }
+
+    /* ✅ Prevent iOS Safari zoom quirks */
+    input, button {
+      font-size: 16px !important;
     }
 
     .app {
       display: grid;
       grid-template-columns: 1fr;
       min-height: 100vh;
+      touch-action: manipulation; /* ✅ block double-tap zoom */
     }
     @media (min-width: 800px) {
       .app { grid-template-columns: 1fr 1fr; }
@@ -245,14 +251,12 @@
       let coverage = 0;
       let diff = amount;
 
-      // Apply vouchers only when amount >= first ticket
       if (amount >= VOUCHER_VALUE) {
         vouchers = Math.min(MAX_VOUCHERS, Math.floor(amount / VOUCHER_VALUE));
         coverage = Math.min(MAX_COVERAGE, vouchers * VOUCHER_VALUE);
         diff = Math.max(0, amount - coverage);
       }
 
-      // Next voucher info
       let nextNeeded = 0;
       if (amount < VOUCHER_VALUE) {
         nextNeeded = VOUCHER_VALUE - amount;
