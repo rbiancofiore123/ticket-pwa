@@ -320,6 +320,11 @@
 
     renderItems();
     calculate();
+
+    // ✅ Extra: block double-tap zoom (but keep pinch-to-zoom)
+    document.addEventListener('dblclick', function (e) {
+      e.preventDefault();
+    }, { passive: false });
   </script>
 </body>
 </html>
