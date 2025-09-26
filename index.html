@@ -18,13 +18,14 @@
       height: 100%; width: 100%;
       font-family: Arial, sans-serif;
       background: #0f172a; color: #e5e7eb;
-      overflow: hidden;
+      overflow-y: auto; /* allow scrolling */
+      -webkit-overflow-scrolling: touch;
     }
 
     .app {
       display: grid;
       grid-template-columns: 1fr;
-      height: 100vh;
+      min-height: 100vh;
     }
     @media (min-width: 800px) {
       .app { grid-template-columns: 1fr 1fr; }
@@ -38,8 +39,8 @@
       border-radius: 16px;
       margin: 1vh;
       font-size: clamp(14px, 2.2vw, 20px);
-      flex: 1;              /* cards fill space */
-      min-height: 0;        /* Safari fix */
+      flex: 1;
+      min-height: 0;
       box-sizing: border-box;
     }
 
@@ -62,8 +63,10 @@
       background: #1f2937; border: none;
       padding: 1.5vh; margin: 0.5vh;
       border-radius: 10px; color: white; font-size: clamp(18px, 3vw, 26px); cursor: pointer;
+      transition: background 0.2s ease;
     }
-    .btn.add { background: #0891a6; }
+    .btn:hover { background: #374151; }
+    .btn.add { background: #0891a6; font-size: clamp(20px, 3.5vw, 28px); padding: 2vh; min-width: 45%; }
     .btn.warn { background: #374151; color: #fca5a5; }
     .btn.remove { background: #ef4444; font-size: clamp(14px, 2vw, 18px); padding: 0.5vh 1vh; margin-left: 8px; }
 
@@ -80,17 +83,20 @@
 
     .items {
       flex: 1;
-      overflow-y: auto; /* only items scroll */
+      overflow-y: auto;
       margin-top: 1vh;
       font-size: clamp(16px, 2.5vw, 20px);
       min-height: 0;
+      border-top: 1px solid #374151;
+      border-bottom: 1px solid #374151;
+      padding: 0.5vh 0;
     }
     .item { display: flex; justify-content: space-between; align-items: center; padding: 1vh 0; border-bottom: 1px solid #374151; }
 
     .results {
       display: flex;
       flex-direction: column;
-      justify-content: space-between; /* keeps top stats & caps visible */
+      justify-content: space-between;
       flex: 1;
       min-height: 0;
     }
