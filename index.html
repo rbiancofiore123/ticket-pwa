@@ -66,9 +66,24 @@
       transition: background 0.2s ease;
     }
     .btn:hover { background: #374151; }
-    .btn.add { background: #0891a6; font-size: clamp(20px, 3.5vw, 28px); padding: 2vh; min-width: 45%; }
+
+    /* Add + Clear All same size */
+    .btn.add,
+    .btn.warn {
+      font-size: clamp(20px, 3.5vw, 28px);
+      padding: 2vh;
+      flex: 1;
+      text-align: center;
+    }
+    .btn.add { background: #0891a6; }
     .btn.warn { background: #374151; color: #fca5a5; }
-    .btn.remove { background: #ef4444; font-size: clamp(14px, 2vw, 18px); padding: 0.5vh 1vh; margin-left: 8px; }
+
+    .btn.remove {
+      background: #ef4444;
+      font-size: clamp(14px, 2vw, 18px);
+      padding: 0.5vh 1vh;
+      margin-left: 8px;
+    }
 
     .keypad {
       display: grid;
@@ -130,7 +145,8 @@
           <input id="amount" placeholder="0,00" inputmode="decimal" />
           <div class="suffix">EUR</div>
         </div>
-        <div>
+        <!-- Add + Clear All buttons side by side -->
+        <div style="display:flex; gap:1vh;">
           <button class="btn add" id="addItem">Add</button>
           <button class="btn warn" id="clearAll">Clear All</button>
         </div>
@@ -224,13 +240,22 @@
     function calculate() {
       const amount = items.reduce((a, b) => a + b, 0);
 
-      let vouchers = Math.round(amount / VOUCHER_VALUE);
-      vouchers = Math.min(MAX_VOUCHERS, Math.max(0, vouchers));
-      let coverage = Math.min(MAX_COVERAGE, vouchers * VOUCHER_VALUE);
-      let diff = Math.max(0, amount - coverage);
+      let vouchers = 0;
+      let coverage = 0;
+      let diff = amount;
 
+      // Apply vouchers only when amount >= first ticket
+      if (amount >= VOUCHER_VALUE) {
+        vouchers = Math.min(MAX_VOUCHERS, Math.floor(amount / VOUCHER_VALUE));
+        coverage = Math.min(MAX_COVERAGE, vouchers * VOUCHER_VALUE);
+        diff = Math.max(0, amount - coverage);
+      }
+
+      // Next voucher info
       let nextNeeded = 0;
-      if (vouchers < MAX_VOUCHERS) {
+      if (amount < VOUCHER_VALUE) {
+        nextNeeded = VOUCHER_VALUE - amount;
+      } else if (vouchers < MAX_VOUCHERS) {
         const nextStep = (vouchers + 1) * VOUCHER_VALUE;
         nextNeeded = Math.max(0, nextStep - amount);
       }
@@ -242,6 +267,8 @@
 
       if (amount === 0) {
         nextVoucherEl.textContent = "Next voucher: €0.00 needed";
+      } else if (amount < VOUCHER_VALUE) {
+        nextVoucherEl.textContent = `Add ${fmt.format(nextNeeded)} to reach your first voucher`;
       } else if (vouchers >= MAX_VOUCHERS) {
         nextVoucherEl.textContent = "Max vouchers already applied";
       } else if (nextNeeded > 0) {
