@@ -38,7 +38,8 @@
       border-radius: 16px;
       margin: 1vh;
       font-size: clamp(14px, 2.2vw, 20px);
-      height: calc(100vh - 2vh); /* fit screen */
+      flex: 1;              /* cards fill space */
+      min-height: 0;        /* Safari fix */
       box-sizing: border-box;
     }
 
@@ -82,15 +83,16 @@
       overflow-y: auto; /* only items scroll */
       margin-top: 1vh;
       font-size: clamp(16px, 2.5vw, 20px);
-      min-height: 0; /* important for Safari flexbox */
+      min-height: 0;
     }
     .item { display: flex; justify-content: space-between; align-items: center; padding: 1vh 0; border-bottom: 1px solid #374151; }
 
     .results {
       display: flex;
       flex-direction: column;
-      justify-content: space-between; /* keeps results visible */
+      justify-content: space-between; /* keeps top stats & caps visible */
       flex: 1;
+      min-height: 0;
     }
 
     .stat { display: flex; justify-content: space-between; margin: 1vh 0; }
@@ -216,20 +218,17 @@
     function calculate() {
       const amount = items.reduce((a, b) => a + b, 0);
 
-      // Voucher logic
       let vouchers = Math.round(amount / VOUCHER_VALUE);
       vouchers = Math.min(MAX_VOUCHERS, Math.max(0, vouchers));
       let coverage = Math.min(MAX_COVERAGE, vouchers * VOUCHER_VALUE);
       let diff = Math.max(0, amount - coverage);
 
-      // Next voucher info
       let nextNeeded = 0;
       if (vouchers < MAX_VOUCHERS) {
         const nextStep = (vouchers + 1) * VOUCHER_VALUE;
         nextNeeded = Math.max(0, nextStep - amount);
       }
 
-      // Update UI
       totalEl.textContent = fmt.format(amount);
       coverageEl.textContent = fmt.format(coverage);
       diffEl.textContent = fmt.format(diff);
@@ -274,7 +273,6 @@
       };
     });
 
-    // PWA: register service worker
     if ('serviceWorker' in navigator) {
       window.addEventListener('load', () => {
         navigator.serviceWorker.register('./sw.js', { scope: './' })
