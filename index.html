@@ -147,7 +147,6 @@
     <div class="card">
       <div>
         <div class="title">Ticket Calculator</div>
-        <!--<div class="subtitle">Enter item price and press "Add"</div>-->
         <div class="input">
           <input id="amount" placeholder="0,00" inputmode="decimal" />
           <div class="suffix">EUR</div>
@@ -171,6 +170,7 @@
         <button class="btn" data-key="3">3</button>
         <button class="btn" data-key="0">0</button>
         <button class="btn" data-key=",">,</button>
+        <button class="btn" data-key="-">-</button> <!-- ✅ new -->
         <button class="btn" id="bksp">⌫</button>
       </div>
 
@@ -283,9 +283,10 @@
       }
     }
 
+    // ✅ Allow negative values too
     document.getElementById('addItem').onclick = () => {
       const val = parseAmount(amountEl.value);
-      if (val > 0) {
+      if (val !== 0) {             // changed from (val > 0)
         items.push(val);
         amountEl.value = "";
         renderItems();
@@ -303,10 +304,16 @@
       amountEl.value = amountEl.value.slice(0, -1);
     };
 
+    // ✅ Keypad input: allow "-" only at the start
     document.querySelectorAll('.keypad .btn[data-key]').forEach(btn => {
       btn.onclick = () => {
         let k = btn.dataset.key;
         if (k === "," && (amountEl.value.includes(",") || amountEl.value.includes("."))) return;
+        if (k === "-") {
+          if (amountEl.value.startsWith("-")) return;  // prevent double minus
+          amountEl.value = "-" + amountEl.value;
+          return;
+        }
         amountEl.value += k;
       };
     });
